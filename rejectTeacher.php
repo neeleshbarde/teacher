@@ -7,7 +7,7 @@
 	include 'conn.php';
 	if($teacherId!=0)
 	{
-	  $sql = "update teacher set status='Y' where id='$teacherId'";
+	  $sql = "update teacher set status='R' where id='$teacherId'";
 	  //echo $sql;
       $result = @mysql_query($sql);
       if ($result){

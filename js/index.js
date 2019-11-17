@@ -2,7 +2,9 @@
 var app;
 var labels;
 var languages=[]; 			
- 
+var errMsg;
+var logo;
+var homePage;
 var connection = new RTCMultiConnection();
 // by default, socket.io server is assumed to be deployed on your own URL
 connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
@@ -102,13 +104,21 @@ connection.onMediaError = function(e) {
 };
 
 $(document).ready(function($) {	
+ //capture all fixed data
+ errMsg=document.getElementById('errMsg');
+ logo=document.getElementById('logo');
+ homePage=document.getElementById('homePage');
+ errMsg=document.getElementById('errMsg');
+ errMsg=document.getElementById('errMsg');
+	 
+ 
  $("#backToTeacher").on('click',function(e){
  console.log('back button pressed',localStorage); 
  $("#errMsg").innerHTML='Closing Connection...';
  setTimeout(function(){  location.reload(); },200);
  });
 
-  if (window.history && window.history.pushState) {
+ if (window.history && window.history.pushState) {
   window.history.pushState('forward', null, './#forward');
   	$(window).on('popstate', function() {
 	 console.log("popState entry",localStorage);
@@ -130,7 +140,7 @@ $(document).ready(function($) {
     });
   }
 
-
+});
 app = {
 	 loadJS :function(file) {
     // DOM: Create the script element
@@ -146,14 +156,16 @@ app = {
     // Application Constructor
     initialize: function() {
 		languages=[];
+		if(new Date().getTime()-localStorage.getItem("currTime")>(30*1000)){
+			localStorage.clear();
+		}
 		localStorage.setItem("page","initialize");
+		localStorage.setItem("currTime",new Date().getTime());
 		console.log("initialize",localStorage);
 		$.ajax({
           url: 'https://www.msquaresys.com/teacher/getLanguages.php',
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
-          success: function(data) {
+          dataType: 'json',  crossOrigin: true,  async:false,
+		  success: function(data) {
 			let options=""
             data.rows.forEach(function(item){
   			const picked = Object.assign({}, {id: item.id, name: 'lblLearn'+item.name, suffix:item.suffix});
@@ -166,7 +178,7 @@ app = {
       	  document.getElementById('errMsg').innerHTML="Language Load Error "+textStatus+'-'+xhr.statusText;
 		  },
 		  fail: function(xhr, textStatus, errorThrown){
-      	  document.getElementById('errMsg').innerHTML="Language Load Error "+textStatus+'-'+xhr.statusText;
+      	  document.getElementById('errMsg').innerHTML="Language Load Fail "+textStatus+'-'+xhr.statusText;
 		  }
         });
 				
@@ -174,7 +186,6 @@ app = {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
 		document.getElementById('language').addEventListener('change',  this.onLanguageChange.bind(this), false);
 		document.addEventListener('loginSuccess', this.onLoginTeacher.bind(this), false);
-		document.addEventListener('loginFail', this.onLoginFail.bind(this), false);
 		document.getElementById("logo").hidden=false;
 		if(localStorage.getItem("backToTeacher")=="true"){
 		  localStorage.removeItem("backToTeacher");
@@ -211,7 +222,7 @@ app = {
 		  setTimeout(function() {
 			console.log("onLanguageChange-resolve-promise1");
 		    resolve('foo');
-		  }, 300);
+		  }, 500);
 		});
 		promise1.then(function(value) {
 		 console.log("promise1 entry");
@@ -264,6 +275,7 @@ app = {
 	},
 	onLoginLanding: function(){
 		localStorage.setItem("page","onLoginLanding");
+		localStorage.setItem("currTime",new Date().getTime());
 		console.log("onLoginLanding",localStorage);
 		document.getElementById("deviceready").hidden=true;
 		document.getElementById("userSelection").hidden=true;
@@ -320,6 +332,7 @@ app = {
 	},
 	onTeacherRegistrationPage: function(){
 		localStorage.setItem("page","onTeacherRegistrationPage");
+		localStorage.setItem("currTime",new Date().getTime());
 		console.log("onLoginLanding entry",localStorage);
 		this.hideDivs();
 		
@@ -357,9 +370,7 @@ app = {
 		  input.setAttribute('id','tid');
 		  $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeacherRegistartionId.php',
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
+          dataType: 'json', crossOrigin: true, async:false, 
           success: function(data) {
 		   input.setAttribute('value',data.total);
 		  },
@@ -629,22 +640,61 @@ app = {
 	  }));
 	  
 	   $("#registerTeacherSave").on('click',(function(e) {
-	     
-		e.preventDefault();
+	    e.preventDefault();
 		 $("#uploadFormPhoto").submit();
 		 $("#uploadFormVideo").submit();
- 
+		 let formEl = document.forms.teacherRegistrationForm
+		 // Create an FormData object 
+        let tid=document.getElementById("tid").value;
+		let lblName=document.getElementById("lblName").value;
+		let lblUniversity=document.getElementById("lblUniversity").value;
+		let lblLocation=document.getElementById("lblLocation").value;
+		let lblYearOfExp=document.getElementById("lblYearOfExp").value;
+		let lblEmail=document.getElementById("lblEmail").value;
+		let lblPhone=document.getElementById("lblPhone").value;
+		let lblMobileNo=document.getElementById("lblMobileNo").value;
+		let photo_src;
+		let sample_video;
+		try{
+		photo_src=$($("#uploadFormPhoto").children()[0]).children()[0].src;
+		}catch(err){
+			document.getElementById("errMsg").innerHTML="Upload Image Failed";
+			photo_src="";
+			return;
+		}
+		try{
+		sample_video=$($("#uploadFormVideo").children()[0]).children()[0].src;
+		}catch(err){
+			document.getElementById("errMsg").innerHTML="Upload Video Failed";
+			sample_video="";
+		}
+
+        
 		$.ajax({
-        	url: "#registerTeacherSave.php",
-			type: "POST",
-			data:  new FormData(this),
-		    success: function(data)
+        	url: "registerTeacherSave.php",
+			type: "get",
+			data: {
+				tid: tid,
+				lblName:lblName,
+				lblUniversity:lblUniversity,
+				lblLocation:lblLocation,
+				lblYearOfExp:lblYearOfExp,
+				lblEmail:lblEmail,
+				lblPhone:lblPhone,
+				lblMobileNo:lblMobileNo,
+				photo_src:photo_src,
+				sample_video:sample_video
+			},
+		    success: function(out)
 		    {
-			 console.log(data);
+			 console.log(data,out);
 		    },
-		  	error: function() 
+		  	error: function(a,b,c) 
 	    	{
-			 console.log(data);
+			 console.log(a,b,c);
+	    	}, fail: function(a,b,c) 
+	    	{
+			 console.log(a,b,c);
 	    	} 	        
 	   });
 	  }));
@@ -676,26 +726,17 @@ app = {
 
         $.ajax({
             type: "POST",
-            enctype: 'multipart/form-data',
-            url: "/api/upload/multi",
-            data: data,
-            processData: false,
-            contentType: false,
-            cache: false,
-            timeout: 600000,
+			enctype: 'multipart/form-data',  url: "/api/upload/multi",
+            data: data,  processData: false,  contentType: false, cache: false, timeout: 600000,
             success: function (data) {
-
                 $("#result").text(data);
                 console.log("SUCCESS : ", data);
                 $("#btnSubmit").prop("disabled", false);
-
             },
             error: function (e) {
-
                 $("#result").text(e.responseText);
                 console.log("ERROR : ", e);
                 $("#btnSubmit").prop("disabled", false);
-
             }
         });
 
@@ -711,6 +752,8 @@ app = {
 	document.getElementById("homePageContent").innerHTML="";
 	document.getElementById("teacherPage").innerHTML="";
 	document.getElementById("showAllPage").innerHTML="";
+	if(document.getElementById("errMsg").innerHTML.length!=0)
+	  setTimeout(function(){document.getElementById("errMsg").innerHTML="";},2000);
 	//document.getElementById("userSelection").innerHTML=""
 	//document.getElementById("loginPage").innerHTML="";
 	document.getElementById("containerFooter").innerHTML="";
@@ -721,9 +764,7 @@ app = {
 	 let t_id=false;
 	 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getLogin.php?username='+userName+'&password='+password,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
+          dataType: 'json', crossOrigin: true, async:false,		 
           success: function(data) {
 			if(data.login){
 				t_id=data.id;
@@ -740,9 +781,7 @@ app = {
 		if(t_id){
 			 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeachers.php?teacherId='+t_id,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
+          dataType: 'json', crossOrigin: true, async:false,
           success: function(data) {
 			 teacher =data.rows[0];
           },
@@ -760,6 +799,7 @@ app = {
 	},
 	onLoginForTeacher: function() {
 		localStorage.setItem("page","onLoginForTeacher");
+		localStorage.setItem("currTime",new Date().getTime());
 		let teacherLogin = this.getLogin(document.getElementById('loginName').value, document.getElementById('loginPasswd').value);
 		document.getElementById("loginName").value='';
 	    document.getElementById("loginPasswd").value='';
@@ -769,7 +809,7 @@ app = {
 		  this.onLoginTeacher();
 	     }else{
 			 console.log("login fail");
-			 document.getElementById("errMsg").value='Invalid Login';
+			 document.getElementById("errMsg").innerHTML='Invalid Login';
 		 }			 
 	},
 	onLoginTeacher:function(){
@@ -782,6 +822,7 @@ app = {
 	},
 	onLoginTeacherForStudent: function() {
 		localStorage.setItem("page","onLoginTeacher");
+		localStorage.setItem("currTime",new Date().getTime());
    	    //data
 		this.hideDivs();
 		document.getElementById("homePage").hidden=false;
@@ -830,9 +871,7 @@ app = {
 		  
 		 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
+          dataType: 'json', crossOrigin: true, async:false,
           success: function(data) {
 		   console.log('inside getTeachersForLang ',data);	
             data.rows.forEach(function(t){ 
@@ -850,6 +889,13 @@ app = {
 		 	 
 		  });
 		  } //end of success
+		  ,
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Language Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Language Fail "+textStatus+'-'+xhr.statusText;
+	  }
          }); //end of ajax
 		} // for loop  
 		app.onImgDisplay();	
@@ -857,6 +903,7 @@ app = {
     },
 	onLoginTeacherForTeacher: function() {
 		localStorage.setItem("page","onLoginTeacher");
+		localStorage.setItem("currTime",new Date().getTime());
    	    //data
 		let teacherMain=JSON.parse(localStorage.getItem("teacher"));
 		this.hideDivs();
@@ -865,12 +912,10 @@ app = {
 		
 		$.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeachers.php?teacherId='+teacherMain.id,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: false,
+          dataType: 'json', crossOrigin: true, async:false,
           success: function(data) {
 		   console.log('inside getTeacherSession - Log1',data);
-			 data.rows.forEach(function(t){ 
+			data.rows.forEach(function(t){ 
 			let img= document.createElement('img');
 		    img.setAttribute('src',t.photo_src);
 		    img.setAttribute('alt', t.name);
@@ -895,23 +940,26 @@ app = {
 			
 			});
 			app.onImgDisplay();	
-		  }
+		  },
+	      error: function(xhr, textStatus, errorThrown){
+         	  document.getElementById('errMsg').innerHTML="Getting Teacher Error "+textStatus+'-'+xhr.statusText;
+	      },
+	      fail: function(xhr, textStatus, errorThrown){
+         	  document.getElementById('errMsg').innerHTML="Getting Teacher Fail "+textStatus+'-'+xhr.statusText;
+	      }
 		});
 		
 		 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId='+teacherMain.id,
-          dataType: 'json',
-		  async:true,
-		  crossOrigin: true,
-          success: function(data) {
+          dataType: 'json', crossOrigin: true, async:true,
+		  success: function(data) {
 		   console.log('inside getTeacherSession - log2',data);
-		   if(data.total=="null"){
+		   if(data.total==0){
 			   return;
 		   }
 		   let table= document.createElement('table'); 
 		   let schedules=document.createElement('div');
 		   schedules.appendChild(document.createTextNode(labels['lblMyScheduleManager']));
-		
 		   data.rows.forEach(function(t){
 		   if(Date.parse(t.endTime)>Date.now()){
 		   let tr= document.createElement('tr');
@@ -964,17 +1012,24 @@ app = {
 			schedules.appendChild(table);
 			document.getElementById("homePageContent").appendChild(schedules);
 			} //end of success
+			,
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher Session Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher Session Fail "+textStatus+'-'+xhr.statusText;
+	  }
 	    }); //end of ajax
 	 
 			//check admin 
 		 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeachersForApproval.php?teacherId='+teacherMain.id,
-          dataType: 'json',
-		  async:true,
-		  crossOrigin: true,
-          success: function(data) {
+          dataType: 'json', crossOrigin: true, async:true,
+		  success: function(data) {
 		   console.log('inside getTeachersForApproval ',data);
-		   if(data.total==0){
+		   if(data.rows.length==0){
+		    localStorage.removeItem("isAdmin");
+		    localStorage.removeItem("adminTeacher");
 			   return;
 		   }
 		   localStorage.setItem("isAdmin",true);
@@ -1000,19 +1055,23 @@ app = {
 		    });
 			 document.getElementById("homePageContent").appendChild(approvals);
 			} //end of success
+			,
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Approval Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Approval Fail "+textStatus+'-'+xhr.statusText;
+	  }
 	    }); //end of ajax
 		
 		  
 		app.onImgDisplay();	
 		app.onHome("home");
     },
-	onLoginFail: function() {
-	//console.log("Failed ");
-	document.getElementById("logo").hidden=false;
-	},
 	onShowMore: function(code) {
 		console.log('onShowMore entry', code);
 		localStorage.setItem("page","onShowMore");
+		localStorage.setItem("currTime",new Date().getTime());
 		app.hideDivs();
 		document.getElementById("showAllPage").hidden=false;
 		//console.log(code.target.attributes.l);
@@ -1029,38 +1088,42 @@ app = {
 		divShowAllPage.innerHTML=labels[learn.name] +'<input type ="text" placeholder="'+labels['lblSearch']+'" style="float:right;" ><br>';
 		document.getElementById("showAllPage").appendChild(divShowAllPage);
 		//console.log('//www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id);
-		$.ajax({
-          url: 'https://www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id,
-          dataType: 'json',
-		  async:true,
-		  crossOrigin: true,
-          success: function(data) {
-            data.rows.forEach(function(t){ 
-			//console.log(t);
-		    let img= document.createElement('img');
-		    img.setAttribute('src',t.photo_src);
-		    img.setAttribute('alt', t.name);
-		    img.setAttribute('id', t.id); 
-		    
-		    
-	        let divgallery= document.createElement('div');
-		    divgallery.setAttribute('class','gallery');
-			divgallery.setAttribute('id',t.id);
-		    divgallery.append(img);
-		    document.getElementById("showAllPage").appendChild(divgallery);
-		    
-		    let divDesc= document.createElement('div');
-			divDesc.setAttribute('id',t.id);
-		    divDesc.innerHTML=labels['lblName'] +' : ' + t.name+ '<span id ='+t.id+' style="float:right" class="glyphicon glyphicon-heart">'+t.rating+'</span><br>  '+labels['lblLocation'] +' :<span  id ='+t.id+' >'+t.loc+'</span>'
-		    divgallery.append(divDesc);
-		   });
-		  app.onImgDisplay();
-		  app.onHome("home");
-          }
-        });
+	$.ajax({
+      url: 'https://www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id,
+      dataType: 'json', crossOrigin: true, async:true,
+      success: function(data) {
+        data.rows.forEach(function(t){ 
+		//console.log(t);
+	    let img= document.createElement('img');
+	    img.setAttribute('src',t.photo_src);
+	    img.setAttribute('alt', t.name);
+	    img.setAttribute('id', t.id); 
+	    
+	    let divgallery= document.createElement('div');
+	    divgallery.setAttribute('class','gallery');
+		divgallery.setAttribute('id',t.id);
+	    divgallery.append(img);
+	    document.getElementById("showAllPage").appendChild(divgallery);
+	    
+	    let divDesc= document.createElement('div');
+		divDesc.setAttribute('id',t.id);
+	    divDesc.innerHTML=labels['lblName'] +' : ' + t.name+ '<span id ='+t.id+' style="float:right" class="glyphicon glyphicon-heart">'+t.rating+'</span><br>  '+labels['lblLocation'] +' :<span  id ='+t.id+' >'+t.loc+'</span>'
+	    divgallery.append(divDesc);
+	   });
+	   app.onImgDisplay();
+	   app.onHome("home");
+      },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Language Session Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher for Language Session Fail "+textStatus+'-'+xhr.statusText;
+	  }
+     });
 	 },
 	onTeacherDetails: function(teacher) {
 		localStorage.setItem("page","onTeacherDetails");
+		localStorage.setItem("currTime",new Date().getTime());
 		console.log("onTeacherDetails-entry",localStorage, teacher);
 		let tid;
 		try{
@@ -1172,50 +1235,58 @@ app = {
 	 divrow2col0.innerHTML="";
 	 divrow2.appendChild(divrow2col0);
 	 $.ajax({
-          url: 'https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId='+t.id,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
-          success: function(data) {
-			  data.rows.forEach(function(t){
-				 if(Date.parse(t.endTime)>Date.now()){  
-			      let teacherSession= document.createElement('span');
-		   	      teacherSession.setAttribute('class','glyphicon glyphicon-check');
-			      teacherSession.appendChild(document.createTextNode(' '+t.startTime));
-			      teacherSession.appendChild(document.createTextNode(' - '));
-			      teacherSession.appendChild(document.createTextNode( t.endTime+' '));
-			      teacherSession.appendChild(document.createTextNode(' '+labels['lblLearn'+t.l_name]));
-			      if(Date.parse(t.startTime)<Date.now() && Date.parse(t.endTime)>Date.now()){
-			      let live= document.createElement('a');
-			      live.setAttribute('liveid',t.lang_id+'_'+t.teacher_id);
-				  live.setAttribute('href','./#forward');
-				  live.addEventListener('click',  app.joinLive.bind(this), true);
-			      live.appendChild(document.createTextNode(' '+labels['lblLive']+' '));
-			      teacherSession.appendChild(live);
-			      }
-			      teacherSession.appendChild(document.createElement("br"));
-			      document.getElementById('sessions_'+t.teacher_id).appendChild(teacherSession);
-				}
-			  });
-		  }
-        }); 
-		this.onHome("home");
+        url: 'https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId='+t.id,
+        dataType: 'json',crossOrigin: true,  async:false,	  
+        success: function(data) {
+		 data.rows.forEach(function(t){
+		 if(Date.parse(t.endTime)>Date.now()){  
+		     let teacherSession= document.createElement('span');
+	   	     teacherSession.setAttribute('class','glyphicon glyphicon-check');
+		     teacherSession.appendChild(document.createTextNode(' '+t.startTime));
+		     teacherSession.appendChild(document.createTextNode(' - '));
+		     teacherSession.appendChild(document.createTextNode( t.endTime+' '));
+		     teacherSession.appendChild(document.createTextNode(' '+labels['lblLearn'+t.l_name]));
+		     if(Date.parse(t.startTime)<Date.now() && Date.parse(t.endTime)>Date.now()){
+		     let live= document.createElement('a');
+		     live.setAttribute('liveid',t.lang_id+'_'+t.teacher_id);
+			 live.setAttribute('href','./#forward');
+			 live.addEventListener('click',  app.joinLive.bind(this), true);
+		     live.appendChild(document.createTextNode(' '+labels['lblLive']+' '));
+		     teacherSession.appendChild(live);
+		     }
+		     teacherSession.appendChild(document.createElement("br"));
+		     document.getElementById('sessions_'+t.teacher_id).appendChild(teacherSession);
+		 }
+		});
+	  },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher Session Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Getting Teacher Session Fail "+textStatus+'-'+xhr.statusText;
+	  }
+     }); 
+	this.onHome("home");
 	},
 	 
 	killSession:function(e){
 	console.log("killSession -entry",e, e.target.id);
 	let teacherSessionId = e.target.id;
 	$.ajax({
-          url: 'https://www.msquaresys.com/teacher/killTeacherSession.php?teacherSessionId='+teacherSessionId,
-          dataType: 'json',
-		  async:false,
-		  crossOrigin: true,
-          success: function(data) {
-		  console.log("removing "+document.getElementById(teacherSessionId));
-		  document.getElementById("tr_"+teacherSessionId).remove();
-		  //document.getElementById(e.target.id).remove();
-		  }
-        }); 
+      url: 'https://www.msquaresys.com/teacher/killTeacherSession.php?teacherSessionId='+teacherSessionId,
+      dataType: 'json',	  crossOrigin: true, async:false,
+      success: function(data) {
+	     console.log("removing "+document.getElementById(teacherSessionId));
+	     document.getElementById("tr_"+teacherSessionId).remove();
+	     //document.getElementById(e.target.id).remove();
+	  },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Remove Session Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Remove Session Fail "+textStatus+'-'+xhr.statusText;
+	  }
+    }); 
 	
 	},
 	onReset: function() {
@@ -1247,14 +1318,18 @@ app = {
 	 let teachers=[];
 	 $.ajax({
       url: 'https://www.msquaresys.com/teacher/getTeachers.php?teacherId='+tid,
-      dataType: 'json',
-	  async:false,
-	  crossOrigin: true,
-      success: function(data) {
+      dataType: 'json', crossOrigin: true, async:false,
+	  success: function(data) {
         data.rows.forEach(function(item){ 
 	  	teachers.push(item);
 	    });
-      }
+      },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="get Teacher Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="get Teacher Fail "+textStatus+'-'+xhr.statusText;
+	  }
      });
 	 for(var i=0;i<teachers.length;i++){
 		if(teachers[i].id==tid){
@@ -1318,8 +1393,20 @@ app = {
 		document.getElementById("containerFooter").appendChild(approveTeacherspan);
 		
 		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
+		 
 		approveTeacherspan.addEventListener('click',  this.approvedTeacher.bind(this), false); 
+		
+		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
+		let rejectTeacherspan= document.createElement('span');
+		rejectTeacherspan.setAttribute('id',teacherTobeApproved);
+		rejectTeacherspan.setAttribute('class','glyphicon glyphicon-file'); 
+		rejectTeacherspan.setAttribute('style','float :left');
+		rejectTeacherspan.appendChild(document.createTextNode(' '+labels['lblReject']));
+		document.getElementById("containerFooter").appendChild(rejectTeacherspan);
+		
+		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
+		rejectTeacherspan.addEventListener('click',  this.rejectedTeacher.bind(this), false); 
+		localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
 		}
 		let resetspan= document.createElement('span');
 		resetspan.setAttribute('id','Logout');
@@ -1355,6 +1442,7 @@ app = {
 	   liveSessionId= e.target.attributes.liveid.value;
 	   localStorage.setItem(connection.socketMessageEvent, liveSessionId);
 	   localStorage.setItem("page", "goingLive");
+	   localStorage.setItem("currTime",new Date().getTime());
 	   console.log("Click" ,localStorage);
 	   document.getElementById("logo").hidden=true;
 	   document.getElementById("errMsg").innerHTML="1. Attempting Connection for Teacher Broadcast...";
@@ -1374,7 +1462,7 @@ app = {
        setTimeout(function()
 	    { 
 		console.log("Check Broadcast Opened -Entry",localStorage);
-	    document.getElementsByClassName("media-box")[0].children[0].remove();
+	    //document.getElementsByClassName("media-box")[0].children[0].remove();
 		document.getElementById("logo").hidden=true;
 		document.getElementById('errMsg').innerHTML="Teacher is Broadcasting now ...";
 		
@@ -1391,6 +1479,7 @@ app = {
 	e.preventDefault();
 	try{
 	localStorage.setItem("page", "joinLive");
+	localStorage.setItem("currTime",new Date().getTime());
 	console.log("Click joinLive for session id " +e.target.attributes.liveid.value);
 	let liveSessionId= e.target.attributes.liveid.value;
 	localStorage.setItem(connection.socketMessageEvent, liveSessionId);
@@ -1427,7 +1516,6 @@ app = {
 	app.onHome('homeApprove');
 	localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
 	console.log("approveTeacher-exit");
-	 
  	},
 	approvedTeacher:function(e){
 	console.log("approvedTeacher-entry" ,localStorage);
@@ -1437,18 +1525,47 @@ app = {
 	
 	 $.ajax({
       url: 'https://www.msquaresys.com/teacher/approveTeacher.php?teacherId='+tid,
-      dataType: 'json',
-	  async:false,
-	  crossOrigin: true,
-      success: function(data) {
+      dataType: 'json', crossOrigin: true, async:false,
+	  success: function(data) {
        console.log("Teacher Approved : id ="+tid);
-      }
+      },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Approve Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Approve Fail "+textStatus+'-'+xhr.statusText;
+	  }
      });
 	
 	localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
 	app.onLoginTeacherForTeacher();
 	app.onHome("home");
 	console.log("approvedTeacher-exit" ,localStorage);
+	},
+	rejectedTeacher:function(e){
+	console.log("rejectedTeacher-entry" ,localStorage);
+	console.log(e.target.id);
+	let tid = e.target.id;
+	console.log("AJAX to reject Teacher" ,'https://www.msquaresys.com/teacher/rejectTeacher.php?teacherId='+tid);
+	
+	 $.ajax({
+      url: 'https://www.msquaresys.com/teacher/rejectTeacher.php?teacherId='+tid,
+      dataType: 'json', crossOrigin: true, async:false,
+	  success: function(data) {
+       console.log("for Teacher Rejected : id ="+tid,data);
+      },
+	  error: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Reject Error "+textStatus+'-'+xhr.statusText;
+	  },
+	  fail: function(xhr, textStatus, errorThrown){
+     	  document.getElementById('errMsg').innerHTML="Reject Fail "+textStatus+'-'+xhr.statusText;
+	  }
+     });
+	
+	localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
+	app.onLoginTeacherForTeacher();
+	app.onHome("home");
+	console.log("rejectedTeacher-exit" ,localStorage);
 	},
 	reconnectStundentOnDisconnect:function() {
 	  let liveSessionId= localStorage.getItem(connection.socketMessageEvent);
@@ -1480,7 +1597,7 @@ app = {
       setTimeout(app.reconnectStundentOnDisconnect, 5000);
 	},
 	reCheckRoomPresence: function() {
-	 
+	  localStorage.setItem("currTime",new Date().getTime());
 	  let liveSessionId= localStorage.getItem(connection.socketMessageEvent);
 	  console.log("reCheckRoomPresence-entry",liveSessionId);
 	  if(null==liveSessionId){
@@ -1512,4 +1629,3 @@ app = {
     }
 };
 app.initialize(); 
- });

@@ -1,6 +1,137 @@
+
+var app;
 var labels;
-var languages=[]; 				 
-var app = {
+var languages=[]; 			
+ 
+var connection = new RTCMultiConnection();
+// by default, socket.io server is assumed to be deployed on your own URL
+connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+connection.socketMessageEvent = 'video-broadcast-demo';
+connection.session = {  audio: true, video: true, oneway: true };
+ 
+
+// https://www.rtcmulticonnection.org/docs/iceServers/
+// use your own TURN-server here!
+connection.iceServers = [{
+    'urls': [
+        'stun:stun.l.google.com:19302',
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302',
+        'stun:stun.l.google.com:19302?transport=udp',
+    ]
+}];
+
+connection.videosContainer = document.getElementById('videos-container');
+connection.onstream = function(event) {
+    var existing = document.getElementById(event.streamid);
+    if(existing && existing.parentNode) {
+      existing.parentNode.removeChild(existing);
+    }
+
+    event.mediaElement.removeAttribute('src');
+    event.mediaElement.removeAttribute('srcObject');
+    event.mediaElement.muted = true;
+    event.mediaElement.volume = 0;
+
+    var video = document.createElement('video');
+
+    try {
+        video.setAttributeNode(document.createAttribute('autoplay'));
+        video.setAttributeNode(document.createAttribute('playsinline'));
+    } catch (e) {
+        video.setAttribute('autoplay', true);
+        video.setAttribute('playsinline', true);
+    }
+
+    if(event.type === 'local') {
+      video.volume = 0;
+      try {
+          video.setAttributeNode(document.createAttribute('muted'));
+      } catch (e) {
+          video.setAttribute('muted', true);
+      }
+    }
+    video.srcObject = event.stream;
+
+    var width = parseInt(connection.videosContainer.clientWidth) - 2;
+	var height = parseInt(connection.videosContainer.clientHeight) - 2;
+    var mediaElement = getHTMLMediaElement(video, {
+        title: event.userid,
+        buttons: ['full-screen','mute-audio', 'mute-video'],
+        width: width,
+		height:height,
+        showOnMouseEnter: false
+    });
+
+    connection.videosContainer.appendChild(mediaElement);
+
+    setTimeout(function() {
+        mediaElement.media.play();
+    }, 5000);
+
+    mediaElement.id = event.streamid;
+}; 
+
+connection.onstreamended = function(event) {
+    var mediaElement = document.getElementById(event.streamid);
+    if (mediaElement) {
+        mediaElement.parentNode.removeChild(mediaElement);
+
+        if(event.userid === connection.sessionid && !connection.isInitiator) {
+          alert('Broadcast is ended. We will reload this page to clear the cache.');
+          location.reload();
+        }
+    }
+};
+
+connection.onMediaError = function(e) {
+    if (e.message === 'Concurrent mic process limit.') {
+        if (DetectRTC.audioInputDevices.length <= 1) {
+            alert('Please select external microphone. Check github issue number 483.');
+            return;
+        }
+
+        var secondaryMic = DetectRTC.audioInputDevices[1].deviceId;
+        connection.mediaConstraints.audio = {
+            deviceId: secondaryMic
+        };
+
+        connection.join(connection.sessionid);
+    }
+	 document.getElementById('connText').innerHTML=e.message;
+};
+
+$(document).ready(function($) {	
+ $("#backToTeacher").on('click',function(e){
+ console.log('back button pressed',localStorage); 
+ $("#errMsg").innerHTML='Closing Connection...';
+ setTimeout(function(){  location.reload(); },200);
+ });
+
+  if (window.history && window.history.pushState) {
+  window.history.pushState('forward', null, './#forward');
+  	$(window).on('popstate', function() {
+	 console.log("popState entry",localStorage);
+	 let page =localStorage.getItem("page");
+	   if(page=="onShowMore"){
+	      app.onLoginTeacher();
+	   }else if(page=="onTeacherDetails"){
+	      app.onLoginTeacher();
+	   }else if(page=="goingLive"){
+	      location.reload();
+	   }else if(page=="joinLive"){
+	      location.reload();
+	   }
+	   else {
+	      app.onReset();
+	  }
+	   console.log("popState exit",localStorage);
+	  return;
+    });
+  }
+
+
+app = {
 	 loadJS :function(file) {
     // DOM: Create the script element
     var jsElm = document.createElement("script");
@@ -638,6 +769,7 @@ var app = {
 		  this.onLoginTeacher();
 	     }else{
 			 console.log("login fail");
+			 document.getElementById("errMsg").value='Invalid Login';
 		 }			 
 	},
 	onLoginTeacher:function(){
@@ -1219,123 +1351,72 @@ var app = {
 	  e.preventDefault();
 	  try{
 	   console.log("Click Live for session id " +e.target.attributes.liveid.value);
+	   //app.hideDivs();
 	   liveSessionId= e.target.attributes.liveid.value;
 	   localStorage.setItem(connection.socketMessageEvent, liveSessionId);
 	   localStorage.setItem("page", "goingLive");
-	   
 	   console.log("Click" ,localStorage);
 	   document.getElementById("logo").hidden=true;
-	   document.getElementById("errMsg").innerHTML="Attempting Connection...";
-       }
+	   document.getElementById("errMsg").innerHTML="1. Attempting Connection for Teacher Broadcast...";
+	   connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: false,
+        OfferToReceiveVideo: true
+      };
+      
+      }
 	  catch(err){
 	   console.log("Invalid sessionid on Click Live" ,e);
 	   return;
-	  }
-	  if(localStorage.getItem("role")=="Teacher"){ 
+	  } 
 	   console.log("role is teacher so opening Broadcast ",liveSessionId);
+	   app.hideDivs();
 	   connection.open(liveSessionId, function() {
        setTimeout(function()
 	    { 
 		console.log("Check Broadcast Opened -Entry",localStorage);
 	    document.getElementsByClassName("media-box")[0].children[0].remove();
 		document.getElementById("logo").hidden=true;
-		  if(localStorage.getItem("role")=="Teacher"){
-		   document.getElementById('errMsg').innerHTML="Broadcasting now...";
-		  }else{	 
-		   document.getElementById('errMsg').innerHTML="Connected.";
-		  }
-		  console.log("Check Broadcast Opened -Exit",localStorage);
-		  document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
-			
+		document.getElementById('errMsg').innerHTML="Teacher is Broadcasting now ...";
+		
+		console.log("Check Broadcast Opened -Exit",localStorage);
+		document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
 		},5000);
 		
-		document.getElementById("errMsg").innerHTML="Attempting Connection Open...";
+		document.getElementById("errMsg").innerHTML="2. Attempting Connection Open for Teacher Broadcast...";
 		 console.log("Post Attempting  -Exit",localStorage);
       });
-	 }
-	 else{
-		connection.sdpConstraints.mandatory = {
-        OfferToReceiveAudio: true,
-        OfferToReceiveVideo: true
-      };
-      connection.join(liveSessionId);
-	
-	 }
- app.reCheckRoomPresence();	 
-  },joinLive : function(e){
-	  let liveSessionId;
-	  e.preventDefault();
-	  try{
-	   console.log("Click joinLive for session id " +e.target.attributes.liveid.value);
-	   liveSessionId= e.target.attributes.liveid.value;
-	   localStorage.setItem(connection.socketMessageEvent, liveSessionId);
-	   localStorage.setItem("page", "joinLive");
-	   
-	   console.log("joinLive" ,localStorage);
-	   
-	  /* let section= document.createElement('section');
-		section.setAttribute('id','vbContainer');
-		section.setAttribute('class','make-center');
-		
-		  let span1= document.createElement('span');
-		span1.setAttribute('id','connText');
-		
-		  let div2= document.createElement('div');
-		div2.setAttribute('id','videos-container');
-		div2.setAttribute('style','margin: 5px 0');
-		
-		  let span3= document.createElement('span');
-		span3.setAttribute('id','backToTeacher');
-		span3.appendChild(document.createTextNode(' '+labels['lblBack']));
-		
-		section.appendChild(span1);
-		section.appendChild(div2);
-		section.appendChild(span3);
-		
-
-		document.getElementById("bc").appendChild(section);		
-	    */
-	   
-	   
-	   
-	   document.getElementById("logo").hidden=true;
-	   document.getElementById("errMsg").innerHTML="Attempting Connection...";
-       }
-	  catch(err){
-	   console.log("Invalid sessionid on Click Live" ,e);
-	   return;
-	  }
-	  if(localStorage.getItem("role")=="Teacher"){ 
-	   console.log("role is teacher so opening Broadcast");
-	   connection.open(liveSessionId, function() {
-       setTimeout(function()
-	    { 
-		console.log("Check Broadcast Opened -Entry",localStorage);
-	    document.getElementsByClassName("media-box")[0].children[0].remove();
-		document.getElementById("logo").hidden=true;
-		  if(localStorage.getItem("role")=="Teacher"){
-		   document.getElementById('errMsg').innerHTML="Broadcasting now...";
-		  }else{	 
-		   document.getElementById('errMsg').innerHTML="Connected.";
-		  }
-		  console.log("Check Broadcast Opened -Exit",localStorage);
-		  document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
-			
-		},5000);
-		
-		document.getElementById("errMsg").innerHTML="Attempting Connection Open...";
-		 console.log("Post Attempting  -Exit",localStorage);
-      });
-	 }
-	 else{
-		connection.sdpConstraints.mandatory = {
-        OfferToReceiveAudio: true,
-        OfferToReceiveVideo: true
-      };
-      connection.join(liveSessionId);
-	
-	 }
- app.reCheckRoomPresence();	 
+	 	 
+  },
+  joinLive : function(e){
+	e.preventDefault();
+	try{
+	localStorage.setItem("page", "joinLive");
+	console.log("Click joinLive for session id " +e.target.attributes.liveid.value);
+	let liveSessionId= e.target.attributes.liveid.value;
+	localStorage.setItem(connection.socketMessageEvent, liveSessionId);
+	console.log("joinLive" ,localStorage);
+	document.getElementById("logo").hidden=true;
+	document.getElementById("errMsg").innerHTML="Attempting Connection for Student to Join...";
+	document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
+	connection.sdpConstraints.mandatory = {
+		OfferToReceiveAudio: true,
+		OfferToReceiveVideo: true
+		};
+		connection.join(liveSessionId);
+	setTimeout(function()
+	{ 
+	try{
+	document.getElementsByClassName("media-box")[0].children[0].remove();
+	}catch(err){
+	}
+	},5000);
+	app.hideDivs();
+	app.reconnectStundentOnDisconnect();	
+		}
+	catch(err){
+	console.log("Invalid sessionid on Click Live" ,e);
+	return;
+	}	  
   },
  
 	approveTeacher:function(e){
@@ -1369,29 +1450,66 @@ var app = {
 	app.onHome("home");
 	console.log("approvedTeacher-exit" ,localStorage);
 	},
-	reCheckRoomPresence: function() {
-	  app.hideDivs();
+	reconnectStundentOnDisconnect:function() {
 	  let liveSessionId= localStorage.getItem(connection.socketMessageEvent);
-	  console.log("-entry",liveSessionId);
+	  console.log("reconnectStundentOnDisconnect-entry",liveSessionId);
+	  if(null==liveSessionId){
+		  return;
+	  }
+	  connection.checkPresence(liveSessionId, function(isRoomExist) {
+			console.log("checkPresence liveSessionId isRoomExist",liveSessionId,isRoomExist);
+            if (isRoomExist) {
+				 document.getElementById('errMsg').innerHTML="Student is Connected.";
+				 if(connection.studentDisconnected){
+					  document.getElementById('errMsg').innerHTML="Student is Connecting Again.";
+					  connection.join(liveSessionId);
+					  connection.studentDisconnected=false;
+					    setTimeout(function()
+						{ 
+						document.getElementsByClassName("media-box")[0].children[0].remove();
+						},5000);
+				 }
+
+			}
+			else{
+				 document.getElementById('errMsg').innerHTML="Probably Teacher is Disconnected. Attempting Retry "+new Date();
+				 connection.studentDisconnected=true;
+			}
+	  });
+	  localStorage.setItem("backToTeacher",true);
+      setTimeout(app.reconnectStundentOnDisconnect, 5000);
+	},
+	reCheckRoomPresence: function() {
+	 
+	  let liveSessionId= localStorage.getItem(connection.socketMessageEvent);
+	  console.log("reCheckRoomPresence-entry",liveSessionId);
 	  if(null==liveSessionId){
 		  return;
 	  }
         connection.checkPresence(liveSessionId, function(isRoomExist) {
+			console.log("checkPresence liveSessionId isRoomExist",liveSessionId,isRoomExist);
             if (isRoomExist) {
-                connection.join(liveSessionId);
-				if(localStorage.getItem("role")=="Teacher"){
-				 document.getElementById('errMsg').innerHTML="Broadcasting now...";
+               if(localStorage.getItem("role")=="Teacher"){
+				 document.getElementById('errMsg').innerHTML="Broadcasting now 2...";
 				 }else{	 
-				 document.getElementById('errMsg').innerHTML="Connected.";
+				 document.getElementById('errMsg').innerHTML="Student is Connected.";
 				 }
-                return;
+				 document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
+			     localStorage.setItem("backToTeacher",true);
+				 app.hideDivs();
+                
             }
-			document.getElementById('errMsg').innerHTML="No Live Session."
-			 document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
+			else{
+			 document.getElementById('errMsg').innerHTML="No Live Session."
+			 console.log("checkPresence joining againg ",liveSessionId);
+			 connection.join(liveSessionId);
+			 
+			}
+			
 			localStorage.setItem("backToTeacher",true);
             setTimeout(app.reCheckRoomPresence, 5000);
         });
     }
 };
 app.initialize(); 
- 
+ });

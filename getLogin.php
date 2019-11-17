@@ -8,7 +8,7 @@
 	include 'conn.php';
 	if($username!=''&&$password!='')
 	{
-	$rs = mysql_query("select 'true', id from teacher where username='$username' and password='$password'");
+	$rs = mysql_query("select 'true', id from teacher where username='$username' and password='$password' and status='Y'");
 	$row = mysql_fetch_row($rs);
 	
 	$result["login"] = $row[0];

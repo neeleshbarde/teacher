@@ -1,0 +1,79 @@
+1. At REST END POINT 
+https://www.msquaresys.com/teacher/getLanguages.php
+OUTPUT - List all languages in the system
+{"total":"4","rows":[{"id":"1","name":"English","suffix":"en"},{"id":"2","name":"Mandarian","suffix":"ch"},{"id":"3","name":"Cantanes","suffix":"zh"},{"id":"4","name":"Japanese","suffix":"jp"}]}
+
+
+2. At REST END POINT 
+https://www.msquaresys.com/teacher/getLanguages.php?langId=1
+OUTPUT - list specific language
+{"total":"1","rows":[{"id":"1","name":"English","suffix":"en"}]}
+
+3. At REST END POINT
+https://www.msquaresys.com/teacher/getTeachersForLang.php
+OUTPUT - LIST all language to teacher mapping
+{"total":"6","rows":[{"id":"1000","lang_id":"1","teacher_id":"11","status":"Y"},{"id":"1001","lang_id":"2","teacher_id":"11","status":"Y"},{"id":"1002","lang_id":"3","teacher_id":"11","status":"Y"},{"id":"1003","lang_id":"4","teacher_id":"11","status":"Y"},{"id":"1004","lang_id":"1","teacher_id":"12","status":"Y"},{"id":"1005","lang_id":"3","teacher_id":"12","status":"Y"}]}
+
+4. At REST END POINT
+https://www.msquaresys.com/teacher/getTeachersForLang.php?langId=1
+OUTPUT - LIst all teachers for the language id specified
+{"total":"2","rows":[{"id":"1000","lang_id":"1","teacher_id":"11","rating":"9","status":"Y"},{"id":"1004","lang_id":"1","teacher_id":"12","rating":"4","status":"Y"}]}
+	
+5. At REST END POINT
+https://www.msquaresys.com/teacher/getTeachersForLang.php?teacherId=11	
+OUTPUT -- List all languages from a teacher id
+{"total":"4","rows":[{"id":"1000","lang_id":"1","teacher_id":"11","status":"Y"},{"id":"1001","lang_id":"2","teacher_id":"11","status":"Y"},{"id":"1002","lang_id":"3","teacher_id":"11","status":"Y"},{"id":"1003","lang_id":"4","teacher_id":"11","status":"Y"}]}
+	
+6. At REST END POINT
+https://www.msquaresys.com/teacher/getTeachersForLang.php?langId=1&teacherId=11
+OUTPUT -- identify a teacher id and a language id comination
+{"total":"1","rows":[{"id":"1000","lang_id":"1","teacher_id":"11","status":"Y"}]}	
+
+
+7. At REST END POINT 
+https://www.msquaresys.com/teacher/getTeachers.php
+OUTPUT --List all the teachers details
+{"total":"4","rows":[{"id":"11","name":"Teacher1","username":"Teacher1","password":"Teacher1","photo_src":"Teacher1","university":"Teacher1 University","loc":"Teacher1 loc","yrs":"10","email":"Teacher1@email.com","phone":"123456789","mobile":"987654321"},{"id":"12","name":"Teacher2","username":"Teacher2","password":"Teacher2","photo_src":"Teacher2","university":"Teacher2 University","loc":"Teacher2 loc","yrs":"12","email":"Teacher2@email.com","phone":"22222222","mobile":"202222222"},{"id":"13","name":"Teacher3","username":"Teacher3","password":"Teacher3","photo_src":"Teacher3","university":"Teacher3 University","loc":"Teacher3 loc","yrs":"13","email":"Teacher3@email.com","phone":"33333333","mobile":"30303030"},{"id":"14","name":"Teacher4","username":"Teacher4","password":"Teacher4","photo_src":"Teacher4","university":"Teacher4 University","loc":"Teacher4 loc","yrs":"14","email":"Teacher4@email.com","phone":"444444444","mobile":"4040404040"}]}
+
+8. At REST END POINT 
+https://www.msquaresys.com/teacher/getTeachers.php?teacherId=11
+OUTPUT - List all details for a specific teacher id
+{"total":"1","rows":[{"id":"11","name":"Teacher1","username":"Teacher1","password":"Teacher1","photo_src":"Teacher1","university":"Teacher1 University","loc":"Teacher1 loc","yrs":"10","email":"Teacher1@email.com","phone":"123456789","mobile":"987654321"}]}
+
+9.
+At REST END POINT 
+https://www.msquaresys.com/teacher/getTeacherSession.php
+OUTPUT - List all  sessions by all teachers for all the language
+
+
+10.
+At REST END POINT 
+https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId=11
+OUTPUT - List all  sessions by specific teacher
+
+11.
+At REST END POINT 
+https://www.msquaresys.com/teacher/getTeacherSession.php?langId=1
+OUTPUT - List all  sessions for specific langugage 
+
+
+12.
+At REST END POINT 
+https://www.msquaresys.com/teacher/getTeacherSession.php?langId=1&teacherId=11
+OUTPUT - List all  sessions for specific langugage and by specific teacher
+
+13.
+At REST END POINT 
+https://www.msquaresys.com/teacher/getLogin.php?username=Teacher1&password=Teacher1
+OUTPUT - teacher login check and if true then the login id
+
+14. At REST END POINT 
+https://www.msquaresys.com/teacher/getTeachersForApproval.php
+OUTPUT - List all details for a specific teacher id
+{"total":"1","rows":[{"id":"11","name":"Teacher1","username":"Teacher1","password":"Teacher1","photo_src":"Teacher1","university":"Teacher1 University","loc":"Teacher1 loc","yrs":"10","email":"Teacher1@email.com","phone":"123456789","mobile":"987654321"}]}
+
+
+
+
+
+

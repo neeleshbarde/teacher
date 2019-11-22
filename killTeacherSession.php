@@ -7,7 +7,7 @@
 	include 'conn.php';
 	if($teacherSessionId!=0)
 	{
-	 $sql = "delete FROM sessionschedule where id='$teacherSessionId'";
+	 $sql = "update sessionschedule set status ='Cancelled' where id='$teacherSessionId'";
 	  //echo $sql;
       $result = @mysql_query($sql);
       if ($result){

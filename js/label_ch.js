@@ -43,5 +43,5 @@ lbllogin:"chLogin",
 lblpasswd:"chPassword",
 lblMyScheduleManager:"chMyScheduleManager",
 lblWelcome:"chWelcome ", 
-lblApproveTeachers:"chApprove Teachers"
+lblApproveTeachers:"chTeachers Pending for Approval"
 }

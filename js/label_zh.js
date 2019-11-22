@@ -43,6 +43,6 @@ lbllogin:"zhLogin",
 lblpasswd:"zhPassword",
 lblMyScheduleManager:"zhMyScheduleManager",
 lblWelcome:"zhWelcome ", 
-lblApproveTeachers:"zhApprove Teachers"
+lblApproveTeachers:"zhTeachers Pending for Approval"
 }
 

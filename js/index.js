@@ -7,7 +7,8 @@ var logo;
 var homePage;
 var connection = new RTCMultiConnection();
 // by default, socket.io server is assumed to be deployed on your own URL
-connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+//connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+connection.socketURL = 'http://rtcmulticonnection.herokuapp.com:443/';
 connection.socketMessageEvent = 'video-broadcast-demo';
 connection.session = {  audio: true, video: true, oneway: true };
  
@@ -323,6 +324,12 @@ app = {
 			spanTeacherSignUp.appendChild(document.createTextNode(labels['lblTeacherSignup']));
 		 inputTeacherSignUp.append(spanTeacherSignUp);
  		divLoginData.appendChild(inputTeacherSignUp);
+		let inputForgot= document.createElement('button');
+		 inputForgot.setAttribute('id','forgotPassword');
+		 inputForgot.setAttribute('type','button');
+		 inputForgot.setAttribute('class','btn btn-link btn-sm');
+		 inputForgot.innerHTML=labels['lblForgotPassword'];  
+ 		divLoginData.appendChild(inputForgot);
 		divLoginData.appendChild(document.createElement('hr'));
 		document.getElementById("loginPage").append(divLoginData);
 		
@@ -341,21 +348,14 @@ app = {
 		teacherRegistrationPage.hidden=false;
 		teacherRegistrationPage.setAttribute('align','center');
 		 
-		 let selectCategoryHtml="";
+		 let header= document.createElement('div');
+		 header.setAttribute('class','well-sm');
+		 header.innerHTML= labels['lblTeacherSignup'];
 		 
-		 for(var i=0;i<languages.length;i++){
-			 selectCategoryHtml+=" <option value="+labels[languages[i].name]+" >"+labels[languages[i].name]+"</option>";
-		 }
-		 selectCategoryHtml ="<select> "+selectCategoryHtml+"</select>";
-
-		 
-		 
-		teacherRegistrationPage.appendChild(document.createTextNode(labels['lblTeacherSignup']));
-		teacherRegistrationPage.appendChild(document.createElement('hr'));
-	 
+		teacherRegistrationPage.appendChild(header);
 		
 		let input_table = document.createElement('table');
-		
+		input_table.setAttribute('class','table-striped');
 		{
 		let input_tr= document.createElement('tr');
 		 input_tr.setAttribute('hidden','true');
@@ -387,11 +387,6 @@ app = {
 		input_table.appendChild(input_tr);
 		}
 		 
-		
-		
-		
-		
-		
 		{
 		let input_tr= document.createElement('tr');
 		let input_td0= document.createElement('td');
@@ -517,6 +512,61 @@ app = {
 		input_table.appendChild(input_tr);
 		}
 		
+		 // Languages
+	   {
+		   let selectCategoryHtml="";
+		 for(var i=0;i<languages.length;i++){
+			 selectCategoryHtml+=" <option value="+labels[languages[i].name]+" >"+labels[languages[i].name]+"</option>";
+		 }
+		  
+		let input_tr= document.createElement('tr');
+		let input_td0= document.createElement('td');
+		 input_td0.setAttribute('style','padding-left:5px');
+		 input_td0.appendChild(document.createTextNode(labels['lblLanguage']) );
+		 input_tr.appendChild(input_td0);
+		
+		 let input_td1= document.createElement('td');
+		 input_td1.setAttribute('style','padding-left:5px');
+		  let select = document.createElement('select');
+		  select.setAttribute('id','lblLanguage');
+		  select.innerHTML=selectCategoryHtml;
+		 input_td1.appendChild(select);
+		 
+		  let inputAdd= document.createElement('input');
+		 inputAdd.setAttribute('id','addLanguage');	
+		 inputAdd.setAttribute('type','button');			 
+		 inputAdd.setAttribute('value',labels['lblAdd']);
+		input_td1.appendChild(inputAdd);
+		 
+		input_tr.appendChild(input_td1);
+		input_table.appendChild(input_tr);
+		let input_tr2= document.createElement('tr');
+		let input_td2= document.createElement('td');
+		let input_langDivs= document.createElement('div');
+		input_langDivs.setAttribute('id','languagesToAdd');	
+		input_td2.appendChild(input_langDivs);
+		input_table.appendChild(input_tr2);
+		 
+	   }
+	   
+	   //desc
+	    {
+		let input_tr= document.createElement('tr');
+		let input_td0= document.createElement('td');
+		 input_td0.setAttribute('style','padding-left:5px');
+		 input_td0.appendChild(document.createTextNode(labels['lblDescription']) );
+		 input_tr.appendChild(input_td0);
+		
+		 let input_td1= document.createElement('td');
+		 input_td1.setAttribute('style','padding-left:5px');
+		  let input = document.createElement('input');
+		  input.setAttribute('id','lblDescription');
+		  input.setAttribute('type','text');
+		 input_td1.appendChild(input);
+		input_tr.appendChild(input_td1);
+		input_table.appendChild(input_tr);
+		}
+		
 		//All data
 		 let formData =document.createElement('form');
 	   { let dataDiv =document.createElement('div');
@@ -532,6 +582,7 @@ app = {
 			// photo
 		 let imgDiv =document.createElement('div');
 		 imgDiv.setAttribute('id','uploadFormLayerPhoto');
+		 imgDiv.setAttribute('class','well');
 		 
 		 let imgDivInput =document.createElement('input');
 		 imgDivInput.setAttribute('name','userPhoto');
@@ -556,13 +607,71 @@ app = {
 		 formImg.setAttribute('method','post');
 		 formImg.appendChild(imgDisp);
 		 formImg.appendChild(imgDiv);
-		 teacherRegistrationPage.appendChild(formImg);
+		 
+		 let table=document.createElement('table');
+		 let tr=document.createElement('tr');
+		 let td=document.createElement('td');
+		 td.appendChild(document.createTextNode(labels['lblUploadPhoto']) );
+		 tr.appendChild(td);
+		 
+		 let td1=document.createElement('td');
+		 td1.setAttribute("style","padding-left:10px");
+		 td1.appendChild(formImg);
+		 tr.appendChild(td1);
+		 table.appendChild(tr);
+		 
+		 teacherRegistrationPage.appendChild(table);
+	   }
+		{
+			// certificate
+		 let imgDiv =document.createElement('div');
+		 imgDiv.setAttribute('id','uploadFormLayerCerti');
+		 imgDiv.setAttribute('class','well');
+		  
+		 let imgDivInput =document.createElement('input');
+		 imgDivInput.setAttribute('name','userCerti');
+		 imgDivInput.setAttribute('type','file');
+		 imgDivInput.setAttribute('class','inputFile');
+		 
+		 let imgDivUpload =document.createElement('input');
+		 imgDivUpload.setAttribute('value','Upload Certi');
+		 imgDivUpload.setAttribute('type','submit');
+		 imgDivUpload.setAttribute('class','btnSubmit');
+		 
+		 imgDiv.appendChild(imgDivInput); 
+		 imgDiv.appendChild(imgDivUpload);
+		 
+		 
+		 let imgDisp =document.createElement('div');
+		 imgDisp.setAttribute('id','targetLayerCerti');
+		 
+		 let formImg =document.createElement('form');
+		 formImg.setAttribute('id','uploadFormCerti');
+		 formImg.setAttribute('action','uploadCerti.php');
+		 formImg.setAttribute('method','post');
+		 formImg.appendChild(imgDisp);
+		 formImg.appendChild(imgDiv);
+		 
+		 let table=document.createElement('table');
+		 let tr=document.createElement('tr');
+		 let td=document.createElement('td');
+		 td.appendChild(document.createTextNode(labels['lblUploadCerti']) );
+		 tr.appendChild(td);
+		 
+		 let td1=document.createElement('td');
+		 td1.setAttribute("style","padding-left:10px");
+		 td1.appendChild(formImg);
+		 tr.appendChild(td1);
+		 table.appendChild(tr);
+		 
+		 teacherRegistrationPage.appendChild(table);
 	   }
 		
 	   {
 	   // video 
 		 let imgDiv =document.createElement('div');
 		 imgDiv.setAttribute('id','uploadFormLayerVideo');
+		 imgDiv.setAttribute('class','well');
 		 
 		 let imgDivInput =document.createElement('input');
 		 imgDivInput.setAttribute('name','userVideo');
@@ -588,8 +697,22 @@ app = {
 		 formImg.appendChild(imgDisp);
 		 formImg.appendChild(imgDiv);
 		 
-		 teacherRegistrationPage.appendChild(formImg);
+		 let table=document.createElement('table');
+		 let tr=document.createElement('tr');
+		 let td=document.createElement('td');
+		 td.appendChild(document.createTextNode(labels['lblUploadVideo']) );
+		 tr.appendChild(td);
+		 
+		 let td1=document.createElement('td');
+		 td1.setAttribute("style","padding-left:10px");
+		 td1.appendChild(formImg);
+		 tr.appendChild(td1);
+		 table.appendChild(tr);
+		 
+		 teacherRegistrationPage.appendChild(table);
+		  
 	   }
+	  
 	   {
 		   // savebutton
 		   let imgSaveTeacherRegisteration =document.createElement('div');
@@ -599,6 +722,7 @@ app = {
 		 saveInput.setAttribute('value',labels['lblSave']);
 		 imgSaveTeacherRegisteration.appendChild(saveInput);
 		 teacherRegistrationPage.appendChild(imgSaveTeacherRegisteration);
+		 teacherRegistrationPage.appendChild(document.createElement('hr'));
 	   }
 		  
 	   $("#uploadFormPhoto").on('submit',(function(e) {
@@ -613,6 +737,24 @@ app = {
 			success: function(data)
 		    {
 			$("#targetLayerPhoto").html(data);
+		    },
+		  	error: function() 
+	    	{
+	    	} 	        
+	   });
+	  }));
+	   $("#uploadFormCerti").on('submit',(function(e) {
+		e.preventDefault();
+		$.ajax({
+        	url: "uploadCerti.php",
+			type: "POST",
+			data:  new FormData(this),
+			contentType: false,
+    	    cache: false,
+			processData:false,
+			success: function(data)
+		    {
+			$("#targetLayerCerti").html(data);
 		    },
 		  	error: function() 
 	    	{
@@ -639,10 +781,18 @@ app = {
 	   });
 	  }));
 	  
+	  $("#addLanguage").on('click',(function(e) {
+		   e.preventDefault();
+		   $("#languagesToAdd").html($("#lblLanguage").val());
+		  }));
+	  
+	  
 	   $("#registerTeacherSave").on('click',(function(e) {
 	    e.preventDefault();
 		 $("#uploadFormPhoto").submit();
+		 $("#uploadFormCerti").submit();
 		 $("#uploadFormVideo").submit();
+		 
 		 let formEl = document.forms.teacherRegistrationForm
 		 // Create an FormData object 
         let tid=document.getElementById("tid").value;
@@ -653,7 +803,9 @@ app = {
 		let lblEmail=document.getElementById("lblEmail").value;
 		let lblPhone=document.getElementById("lblPhone").value;
 		let lblMobileNo=document.getElementById("lblMobileNo").value;
+		let lblDescription=document.getElementById("lblDescription").value;
 		let photo_src;
+		let certi;
 		let sample_video;
 		try{
 		photo_src=$($("#uploadFormPhoto").children()[0]).children()[0].src;
@@ -661,13 +813,22 @@ app = {
 			document.getElementById("errMsg").innerHTML="Upload Image Failed";
 			photo_src="";
 			return;
+		}	
+		try{
+		certi=$($("#uploadFormCerti").children()[0]).children()[0].src;
+		}catch(err){
+			document.getElementById("errMsg").innerHTML="Upload Certificate Failed";
+			certi="";
+			return;
 		}
+		
 		try{
 		sample_video=$($("#uploadFormVideo").children()[0]).children()[0].src;
 		}catch(err){
 			document.getElementById("errMsg").innerHTML="Upload Video Failed";
 			sample_video="";
 		}
+		
 
         
 		$.ajax({
@@ -682,12 +843,17 @@ app = {
 				lblEmail:lblEmail,
 				lblPhone:lblPhone,
 				lblMobileNo:lblMobileNo,
+				lblDescription:lblDescription,
 				photo_src:photo_src,
+				certi:certi,
 				sample_video:sample_video
 			},
 		    success: function(out)
 		    {
-			 console.log(data,out);
+				if(out.success=="true")
+					document.getElementById("errMsg").innerHTML="Registration Completed Sucessfully ";
+				else
+					document.getElementById("errMsg").innerHTML=out.msg;
 		    },
 		  	error: function(a,b,c) 
 	    	{
@@ -702,46 +868,7 @@ app = {
 	   app.onHome("changeLang");
 	   console.log("onTeacherRegistrationPage exit");
 	},
-	spanUploadPhoto: function(){
-		console.log("spanUploadPhoto");
-	},
-	spanUploadVideo: function(){
-		console.log("spanUploadVideo");
-	},
-	registerTeacher: function(){ 
-        //stop submit the form, we will post it manually.
-        event.preventDefault();
-
-        // Get form
-        var form = $('#fileUploadForm')[0];
-
-		// Create an FormData object 
-        var data = new FormData(form);
-
-		// If you want to add an extra field for the FormData
-        data.append("CustomField", "This is some extra data, testing");
-
-		// disabled the submit button
-        $("#btnSubmit").prop("disabled", true);
-
-        $.ajax({
-            type: "POST",
-			enctype: 'multipart/form-data',  url: "/api/upload/multi",
-            data: data,  processData: false,  contentType: false, cache: false, timeout: 600000,
-            success: function (data) {
-                $("#result").text(data);
-                console.log("SUCCESS : ", data);
-                $("#btnSubmit").prop("disabled", false);
-            },
-            error: function (e) {
-                $("#result").text(e.responseText);
-                console.log("ERROR : ", e);
-                $("#btnSubmit").prop("disabled", false);
-            }
-        });
-
-    },
-	hideDivs:function(){
+    hideDivs:function(){
 	document.getElementById("logo").hidden=true;
 	document.getElementById("homePage").hidden=true;
 	document.getElementById("loginPage").hidden=true;
@@ -920,6 +1047,7 @@ app = {
 		    img.setAttribute('src',t.photo_src);
 		    img.setAttribute('alt', t.name);
 		    img.setAttribute('id', t.id);
+			img.setAttribute('class', 'img-thumbnail');
 		 
 	        let divgallery= document.createElement('div');
 		    divgallery.setAttribute('class','gallery');
@@ -954,11 +1082,12 @@ app = {
           dataType: 'json', crossOrigin: true, async:true,
 		  success: function(data) {
 		   console.log('inside getTeacherSession - log2',data);
-		   if(data.total==0){
+		   /*if(data.total==0){
 			   return;
-		   }
+		   }*/
 		   let table= document.createElement('table'); 
 		   let schedules=document.createElement('div');
+		   table.setAttribute('class',' table-striped');
 		   schedules.appendChild(document.createTextNode(labels['lblMyScheduleManager']));
 		   data.rows.forEach(function(t){
 		   if(Date.parse(t.endTime)>Date.now()){
@@ -983,20 +1112,26 @@ app = {
 		      
 		      td0.appendChild(sessionDiv);     
 			  td1.appendChild(document.createTextNode(labels['lblLearn'+t.l_name]));
-			if(Date.parse(t.startTime)<Date.now() && Date.parse(t.endTime)>Date.now()){
-		       let live= document.createElement('a');
-		       live.setAttribute('liveid',t.lang_id+'_'+t.teacher_id);
-		       live.setAttribute('href','./#forward');
-		       live.addEventListener('click',  app.goingLive.bind(this), true);
-		       live.appendChild(document.createTextNode(' '+labels['lblGoLive']+' '));
-			   td2.appendChild(live);
-			}
+			if(Date.parse(t.startTime)<Date.now() && Date.parse(t.endTime)>Date.now() && t.status=='SCHEDULED'){
+		       let golive= document.createElement('a');
+		       golive.setAttribute('liveid',t.lang_id+'_'+t.teacher_id);
+			   golive.setAttribute('class','badge badge-success');
+		       golive.setAttribute('href','./#forward');
+		       golive.addEventListener('click',  app.goingLive.bind(this), true);
+		       golive.appendChild(document.createTextNode(' '+labels['lblGoLive']+' '));
+			   td2.appendChild(golive);
+			}else{
+				 let status= document.createElement('span');
+				 status.setAttribute('class','badge badge-success');
+				 status.appendChild(document.createTextNode(' ' +t.status))
+				 td2.appendChild(status);
+			 }
 			
 			   
 			let teacherSessionCloseSpan= document.createElement('span'); 
 			teacherSessionCloseSpan.setAttribute('id',t.s_id);
-			teacherSessionCloseSpan.setAttribute('class','glyphicon glyphicon-file');
-			teacherSessionCloseSpan.innerHTML=labels['lblDismissSession'];
+			teacherSessionCloseSpan.setAttribute('class','btn btn-danger glyphicon glyphicon-remove');
+			//teacherSessionCloseSpan.innerHTML=labels['lblDismissSession'];
 			 
 			teacherSessionCloseSpan.addEventListener('click',  app.killSession.bind(this), true);
 			td3.appendChild(teacherSessionCloseSpan);
@@ -1010,6 +1145,12 @@ app = {
 		    });
 			
 			schedules.appendChild(table);
+			let addSchedule= document.createElement('span'); 
+			addSchedule.setAttribute('id','addTeacherSessionPre');
+			addSchedule.setAttribute('class','btn btn-info glyphicon glyphicon-plus');
+			addSchedule.appendChild(document.createTextNode(' Add Session'));
+			schedules.appendChild(addSchedule);
+			
 			document.getElementById("homePageContent").appendChild(schedules);
 			} //end of success
 			,
@@ -1046,7 +1187,7 @@ app = {
 		       approve.setAttribute('id',t.id);
 		       approve.setAttribute('href','./#forward');
 		       approve.addEventListener('click',  app.approveTeacher.bind(this), true);
-		       approve.innerHTML=' '+labels['lblApprove'];
+		       approve.innerHTML=' '+labels['lblShowDtl'];
 		       teacherApprove.appendChild(approve);
 		     
 		     				   
@@ -1079,6 +1220,7 @@ app = {
 		try{
 			 lid= app.getLanguage(code.target.attributes.l.value);
 			 localStorage.setItem("showmoreLang",JSON.stringify(lid));
+			 code.preventDefault();
 		}catch(err){
 			lid =JSON.parse(localStorage.getItem("showmoreLang"));
 		}
@@ -1098,6 +1240,7 @@ app = {
 	    img.setAttribute('src',t.photo_src);
 	    img.setAttribute('alt', t.name);
 	    img.setAttribute('id', t.id); 
+		img.setAttribute('class', 'img-thumbnail');
 	    
 	    let divgallery= document.createElement('div');
 	    divgallery.setAttribute('class','gallery');
@@ -1107,7 +1250,7 @@ app = {
 	    
 	    let divDesc= document.createElement('div');
 		divDesc.setAttribute('id',t.id);
-	    divDesc.innerHTML=labels['lblName'] +' : ' + t.name+ '<span id ='+t.id+' style="float:right" class="glyphicon glyphicon-heart">'+t.rating+'</span><br>  '+labels['lblLocation'] +' :<span  id ='+t.id+' >'+t.loc+'</span>'
+	    divDesc.innerHTML=labels['lblName'] +' : ' + t.name+ '<span class="badge"><span id ='+t.id+' style="float:right" class="glyphicon glyphicon-heart"> '+t.rating+' </span></span><br>  '+labels['lblLocation'] +' :<span  id ='+t.id+' >'+t.loc+'</span>'
 	    divgallery.append(divDesc);
 	   });
 	   app.onImgDisplay();
@@ -1163,8 +1306,8 @@ app = {
 	divrow0col1.setAttribute('class','col-sm-1');
 	
 	 var ht="";
-	   ht+="<table>";
-       ht+="<tr><td rowspan=8 style='padding:5px'><img src="+t.photo_src+" alt="+t.name+" id="+t.id+"></td><td style='padding-left:5px'>"+labels['lblName']+"</td><td style='padding-left:5px'>"+t.name+"</td></tr>" ;
+	   ht+="<table class='table-striped'>";
+       ht+="<tr><td rowspan=8 style='padding:5px'><img src="+t.photo_src+" alt="+t.name+" id="+t.id+" class= 'img-thumbnail'></td><td style='padding-left:5px'>"+labels['lblName']+"</td><td style='padding-left:5px'>"+t.name+"</td></tr>" ;
        ht+="<tr><td style='padding-left:5px'>"+labels['lblUniversity']+"</td><td style='padding-left:5px'>"+t.university+"</td></tr>";
        ht+="<tr><td style='padding-left:5px'>"+labels['lblLocation']+"</td><td style='padding-left:5px'>"+t.loc+"</td></tr>";
        ht+="<tr><td style='padding-left:5px'>"+labels['lblYearOfExp']+"</td><td style='padding-left:5px'>"+t.yrs+"</td></tr>";
@@ -1185,6 +1328,17 @@ app = {
 	divrow1col0.innerHTML=labels['lblDescription']+'<p>'+t.description+'</p>';
 	divrow1.append(divrow1col0);
 	
+	if(t.certificate=="" || t.certificate==null || t.certificate==undefined){
+	}else{
+	let divrow2a= document.createElement('div');
+	divrow2a.setAttribute('class','row');
+	teacherPage.append(divrow2a);
+	
+	let divrow2acol0= document.createElement('div');
+	divrow2acol0.setAttribute('class','col-sm-9');
+	divrow2acol0.innerHTML=labels['lblCertificate']+"<p><img src="+t.certificate+" alt="+t.name+" id="+t.id+"></p>";
+	divrow2a.append(divrow2acol0);
+	}
 	
 	 if(t.sampleVideos==undefined){
 	 }
@@ -1234,14 +1388,16 @@ app = {
 	 divrow2col0.setAttribute('class','col-sm-9');
 	 divrow2col0.innerHTML="";
 	 divrow2.appendChild(divrow2col0);
+	 console.log("invoking AJAX getTeacherSession.php?teacherId="+t.id);
 	 $.ajax({
         url: 'https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId='+t.id,
         dataType: 'json',crossOrigin: true,  async:false,	  
         success: function(data) {
+			console.log('inside getTeacherSession ', data);
 		 data.rows.forEach(function(t){
 		 if(Date.parse(t.endTime)>Date.now()){  
 		     let teacherSession= document.createElement('span');
-	   	     teacherSession.setAttribute('class','glyphicon glyphicon-check');
+	   	     teacherSession.setAttribute('class','well glyphicon glyphicon-check');
 		     teacherSession.appendChild(document.createTextNode(' '+t.startTime));
 		     teacherSession.appendChild(document.createTextNode(' - '));
 		     teacherSession.appendChild(document.createTextNode( t.endTime+' '));
@@ -1253,7 +1409,9 @@ app = {
 			 live.addEventListener('click',  app.joinLive.bind(this), true);
 		     live.appendChild(document.createTextNode(' '+labels['lblLive']+' '));
 		     teacherSession.appendChild(live);
-		     }
+		     }else{
+				 teacherSession.appendChild(document.createTextNode(' ' +t.status));
+			 }
 		     teacherSession.appendChild(document.createElement("br"));
 		     document.getElementById('sessions_'+t.teacher_id).appendChild(teacherSession);
 		 }
@@ -1355,13 +1513,39 @@ app = {
 		gallery[i].addEventListener('click',  this.onTeacherDetails.bind(this), false);
 		} 	
 	},
+	acceptReject :function(){  
+	    var teacherPage=document.getElementById("teacherPage");
+ 		teacherPage.appendChild(document.createTextNode(" "));
+		let approveTeacherspan= document.createElement('button');
+		let teacherTobeApproved= JSON.parse(localStorage.getItem('teacher')).id;
+		approveTeacherspan.setAttribute('id',teacherTobeApproved);
+		approveTeacherspan.setAttribute('class','btn btn-success'); 
+		approveTeacherspan.setAttribute('style','float :left');
+		approveTeacherspan.appendChild(document.createTextNode(' '+labels['lblApprove']));
+		teacherPage.appendChild(approveTeacherspan);
+		
+		teacherPage.appendChild(document.createTextNode(" "));
+		 
+		approveTeacherspan.addEventListener('click',  this.approvedTeacher.bind(this), false); 
+		
+		teacherPage.appendChild(document.createTextNode(" "));
+		let rejectTeacherspan= document.createElement('button');
+		rejectTeacherspan.setAttribute('id',teacherTobeApproved);
+		rejectTeacherspan.setAttribute('class','btn btn-danger'); 
+		rejectTeacherspan.setAttribute('style','float :right');
+		rejectTeacherspan.appendChild(document.createTextNode(' '+labels['lblReject']));
+		teacherPage.appendChild(rejectTeacherspan);
+		teacherPage.appendChild(document.createTextNode(" "));
+		rejectTeacherspan.addEventListener('click',  this.rejectedTeacher.bind(this), false); 
+		localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
+	},
 	onHome : function(bothHomeAndLogOut){
 		document.getElementById("containerFooter").innerHTML="";
 		let hr =document.createElement('hr');
 		hr.setAttribute('style','margin-top: 10px; margin-bottom: 10px;');
 		if(bothHomeAndLogOut=='home'){
 		document.getElementById("containerFooter").appendChild(hr); 
-		let homespan= document.createElement('span');
+		let homespan= document.createElement('button');
 		homespan.setAttribute('id','Home');
 		homespan.setAttribute('class','glyphicon glyphicon-home'); 
 		homespan.setAttribute('style','float :left');
@@ -1371,46 +1555,10 @@ app = {
 		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
 		homespan.addEventListener('click',  this.onLoginTeacher.bind(this), false); 
 		}
-		else if(bothHomeAndLogOut=='homeApprove'){
-		document.getElementById("containerFooter").appendChild(hr); 
-		let homespan= document.createElement('span');
-		homespan.setAttribute('id','Home');
-		homespan.setAttribute('class','glyphicon glyphicon-home'); 
-		homespan.setAttribute('style','float :left');
-		homespan.appendChild(document.createTextNode(' '+labels['lbl'+localStorage.getItem('role')]+' '+labels['lblHome']));
-		document.getElementById("containerFooter").appendChild(homespan);
 		
-		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		homespan.addEventListener('click',  this.onLoginTeacher.bind(this), false); 
-		
-		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		let approveTeacherspan= document.createElement('span');
-		let teacherTobeApproved= JSON.parse(localStorage.getItem('teacher')).id;
-		approveTeacherspan.setAttribute('id',teacherTobeApproved);
-		approveTeacherspan.setAttribute('class','glyphicon glyphicon-file'); 
-		approveTeacherspan.setAttribute('style','float :left');
-		approveTeacherspan.appendChild(document.createTextNode(' '+labels['lblApprove']));
-		document.getElementById("containerFooter").appendChild(approveTeacherspan);
-		
-		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		 
-		approveTeacherspan.addEventListener('click',  this.approvedTeacher.bind(this), false); 
-		
-		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		let rejectTeacherspan= document.createElement('span');
-		rejectTeacherspan.setAttribute('id',teacherTobeApproved);
-		rejectTeacherspan.setAttribute('class','glyphicon glyphicon-file'); 
-		rejectTeacherspan.setAttribute('style','float :left');
-		rejectTeacherspan.appendChild(document.createTextNode(' '+labels['lblReject']));
-		document.getElementById("containerFooter").appendChild(rejectTeacherspan);
-		
-		document.getElementById("containerFooter").appendChild(document.createTextNode(" "));
-		rejectTeacherspan.addEventListener('click',  this.rejectedTeacher.bind(this), false); 
-		localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
-		}
-		let resetspan= document.createElement('span');
+		let resetspan= document.createElement('button');
 		resetspan.setAttribute('id','Logout');
-		resetspan.setAttribute('class','glyphicon glyphicon-log-out'); 
+		resetspan.setAttribute('class','glyphicon glyphicon-cog'); 
 		resetspan.setAttribute('style','float :right');
 		resetspan.appendChild(document.createTextNode(' '+labels['lblLogout']));
 		document.getElementById("containerFooter").appendChild(resetspan);
@@ -1513,7 +1661,8 @@ app = {
 	console.log("approveTeacher-entry" ,localStorage);
 	console.log("Teacher id to be approved ="+e.target.id);
 	app.onTeacherDetails(e);
-	app.onHome('homeApprove');
+	app.acceptReject();
+	app.onHome('home');
 	localStorage.setItem("teacher", localStorage.getItem('adminTeacher'));
 	console.log("approveTeacher-exit");
  	},

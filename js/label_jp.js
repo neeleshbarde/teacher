@@ -43,6 +43,6 @@ lbllogin:"jpLogin",
 lblpasswd:"jpPassword",
 lblMyScheduleManager:"jpMyScheduleManager",
 lblWelcome:"jpWelcome ", 
-lblApproveTeachers:"jpApprove Teachers"
+lblApproveTeachers:"jpTeachers Pending for Approval"
 }
 

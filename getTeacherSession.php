@@ -12,7 +12,7 @@
 	$row = mysql_fetch_row($rs);
 	$result["total"] = $row[0];
 	
-	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and t.id=$teacherId and l.id=$langId limit $offset,$rows");
+	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime, s.status FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and t.id=$teacherId and l.id=$langId limit $offset,$rows");
 	
 	$items = array();
 	while($row = mysql_fetch_object($rs)){
@@ -28,7 +28,7 @@
 	$row = mysql_fetch_row($rs);
 	$result["total"] = $row[0];
 	
-	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and t.id=$teacherId limit $offset,$rows");
+	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime,s.status  FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and t.id=$teacherId limit $offset,$rows");
 	
 	
 	$items = array();
@@ -44,7 +44,7 @@
 	$row = mysql_fetch_row($rs);
 	$result["total"] = $row[0];
 	
-	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and l.id=$langId limit $offset,$rows");
+	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime,s.status  FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id and l.id=$langId limit $offset,$rows");
 	
 	$items = array();
 	while($row = mysql_fetch_object($rs)){
@@ -59,7 +59,7 @@
 	$row = mysql_fetch_row($rs);
 	$result["total"] = $row[0];
 	
-	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id limit $offset,$rows");
+	$rs = mysql_query("SELECT s.id as s_id, m.id as m_id,m.teacher_id ,m.lang_id,  l.name as l_name,t.name as t_name,startTime,endTime,s.status  FROM sessionschedule s,langteachermap m, language l, teacher t where s.langteachermap_id =m.id and m.lang_id=l.id and m.teacher_id=t.id limit $offset,$rows");
 	
 	$items = array();
 	while($row = mysql_fetch_object($rs)){

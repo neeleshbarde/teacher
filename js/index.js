@@ -8,7 +8,7 @@ var homePage;
 var connection = new RTCMultiConnection();
 // by default, socket.io server is assumed to be deployed on your own URL
 //connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
-connection.socketURL = 'http://rtcmulticonnection.herokuapp.com:443/';
+connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
 connection.socketMessageEvent = 'video-broadcast-demo';
 connection.session = {  audio: true, video: true, oneway: true };
  
@@ -187,6 +187,7 @@ app = {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
 		document.getElementById('language').addEventListener('change',  this.onLanguageChange.bind(this), false);
 		document.addEventListener('loginSuccess', this.onLoginTeacher.bind(this), false);
+		document.addEventListener('backbutton',this.onBackKeyDown.bind(this),false);
 		document.getElementById("logo").hidden=false;
 		if(localStorage.getItem("backToTeacher")=="true"){
 		  localStorage.removeItem("backToTeacher");
@@ -342,7 +343,7 @@ app = {
 		localStorage.setItem("currTime",new Date().getTime());
 		console.log("onLoginLanding entry",localStorage);
 		this.hideDivs();
-		
+		let registrationError="";
 		  
 		var teacherRegistrationPage=document.getElementById("teacherRegistrationPage");
 		teacherRegistrationPage.hidden=false;
@@ -582,7 +583,7 @@ app = {
 			// photo
 		 let imgDiv =document.createElement('div');
 		 imgDiv.setAttribute('id','uploadFormLayerPhoto');
-		 imgDiv.setAttribute('class','well');
+		 imgDiv.setAttribute('class','well well-sm');
 		 
 		 let imgDivInput =document.createElement('input');
 		 imgDivInput.setAttribute('name','userPhoto');
@@ -626,7 +627,7 @@ app = {
 			// certificate
 		 let imgDiv =document.createElement('div');
 		 imgDiv.setAttribute('id','uploadFormLayerCerti');
-		 imgDiv.setAttribute('class','well');
+		 imgDiv.setAttribute('class','well  well-sm');
 		  
 		 let imgDivInput =document.createElement('input');
 		 imgDivInput.setAttribute('name','userCerti');
@@ -671,7 +672,7 @@ app = {
 	   // video 
 		 let imgDiv =document.createElement('div');
 		 imgDiv.setAttribute('id','uploadFormLayerVideo');
-		 imgDiv.setAttribute('class','well');
+		 imgDiv.setAttribute('class','well  well-sm');
 		 
 		 let imgDivInput =document.createElement('input');
 		 imgDivInput.setAttribute('name','userVideo');
@@ -724,8 +725,9 @@ app = {
 		 teacherRegistrationPage.appendChild(imgSaveTeacherRegisteration);
 		 teacherRegistrationPage.appendChild(document.createElement('hr'));
 	   }
-		  
+		let photodone=false;  
 	   $("#uploadFormPhoto").on('submit',(function(e) {
+		   $("#targetLayerPhoto").html("uploading ...");
 		e.preventDefault();
 		$.ajax({
         	url: "uploadPhoto.php",
@@ -737,13 +739,17 @@ app = {
 			success: function(data)
 		    {
 			$("#targetLayerPhoto").html(data);
+			photodone=true;
 		    },
 		  	error: function() 
 	    	{
+			 $("#targetLayerPhoto").html("upload Failed");
 	    	} 	        
 	   });
 	  }));
+	  let certidone=false;
 	   $("#uploadFormCerti").on('submit',(function(e) {
+		   $("#targetLayerCerti").html("uploading ....");
 		e.preventDefault();
 		$.ajax({
         	url: "uploadCerti.php",
@@ -755,14 +761,17 @@ app = {
 			success: function(data)
 		    {
 			$("#targetLayerCerti").html(data);
+			certidone=true;
 		    },
 		  	error: function() 
 	    	{
+				$("#targetLayerCerti").html("upload Failed");
 	    	} 	        
 	   });
 	  }));
-	  
+	  let videodone=false;
 	  $("#uploadFormVideo").on('submit',(function(e) {
+		  $("#targetLayerVideo").html("uploading .....");
 		e.preventDefault();
 		$.ajax({
         	url: "uploadVideo.php",
@@ -774,25 +783,37 @@ app = {
 			success: function(data)
 		    {
 			$("#targetLayerVideo").html(data);
+			videodone=true;
 		    },
 		  	error: function() 
 	    	{
+			$("#targetLayerVideo").html("upload Failed");
 	    	} 	        
 	   });
 	  }));
-	  
+	  let languagesDone=false;
 	  $("#addLanguage").on('click',(function(e) {
 		   e.preventDefault();
 		   $("#languagesToAdd").html($("#lblLanguage").val());
+		   languagesDone=true;
 		  }));
 	  
 	  
 	   $("#registerTeacherSave").on('click',(function(e) {
 	    e.preventDefault();
-		 $("#uploadFormPhoto").submit();
-		 $("#uploadFormCerti").submit();
-		 $("#uploadFormVideo").submit();
-		 
+		 if(!photodone){
+			 document.getElementById("errMsg").innerHTML="No Photo Uploaded";
+			 return;
+		 }
+		 if(!certidone){
+			 document.getElementById("errMsg").innerHTML="No Certificate Uploaded";
+			 return;
+		 }
+		 if(!videodone){
+			 document.getElementById("errMsg").innerHTML="No Video Uploaded";
+			 return;
+		 }
+		
 		 let formEl = document.forms.teacherRegistrationForm
 		 // Create an FormData object 
         let tid=document.getElementById("tid").value;
@@ -807,6 +828,22 @@ app = {
 		let photo_src;
 		let certi;
 		let sample_video;
+		
+		//check email 
+		console.log("test email",lblEmail,!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(lblEmail)));
+        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(lblEmail)))
+		 {  
+	 console.log("test email");
+	     document.getElementById("errMsg").innerHTML="You have entered an invalid email address!"
+          return;
+         }
+		 //check mobile 
+		 console.log("test mobile",lblMobileNo,(/^\d{10}$/.test(lblMobileNo)));
+		 if (!(/^\d{10}$/.test(lblMobileNo)))
+		 {  document.getElementById("errMsg").innerHTML="You have entered an invalid Mobile no!"
+          return;
+         }
+		
 		try{
 		photo_src=$($("#uploadFormPhoto").children()[0]).children()[0].src;
 		}catch(err){
@@ -823,7 +860,7 @@ app = {
 		}
 		
 		try{
-		sample_video=$($("#uploadFormVideo").children()[0]).children()[0].src;
+		sample_video=$("#regTeacherVideoSample").attr("src");
 		}catch(err){
 			document.getElementById("errMsg").innerHTML="Upload Video Failed";
 			sample_video="";
@@ -834,6 +871,7 @@ app = {
 		$.ajax({
         	url: "registerTeacherSave.php",
 			type: "get",
+			dataType: 'json',  crossOrigin: true,  async:false,
 			data: {
 				tid: tid,
 				lblName:lblName,
@@ -850,8 +888,12 @@ app = {
 			},
 		    success: function(out)
 		    {
-				if(out.success=="true")
+				console.log(out);
+				if(out.success==true){
 					document.getElementById("errMsg").innerHTML="Registration Completed Sucessfully ";
+				    app.initialize();
+					app.onUserSelection();
+				}
 				else
 					document.getElementById("errMsg").innerHTML=out.msg;
 		    },
@@ -1054,17 +1096,11 @@ app = {
 			divgallery.setAttribute('id',t.id);
 		    divgallery.appendChild(img);
 			document.getElementById("homePageContent").appendChild(divgallery);
-			document.getElementById("homePageContent").appendChild(document.createElement('hr'));
-			document.getElementById("homePageContent").appendChild(document.createTextNode(labels['lblWelcome']+' '+t.name));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-		 	document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
-			document.getElementById("homePageContent").appendChild(document.createElement('br'));
+			let welcomeDiv = document.createElement('div');
+			welcomeDiv.setAttribute('class','row');
+			welcomeDiv.appendChild(document.createTextNode(labels['lblWelcome']+' '+t.name))
+			document.getElementById("homePageContent").appendChild(welcomeDiv);
+			 
 			
 			});
 			app.onImgDisplay();	
@@ -1077,6 +1113,14 @@ app = {
 	      }
 		});
 		
+		let schedules=document.createElement('div');
+		   schedules.setAttribute('class','well well-sm');
+		    let schedulesdivLabel =document.createElement("div");
+		    schedulesdivLabel.setAttribute('class','well well-sm');
+		     let schedulesLabel =document.createTextNode(labels['lblMyScheduleManager']);
+		     schedulesdivLabel.appendChild(schedulesLabel);
+		    schedules.appendChild(schedulesdivLabel);
+			document.getElementById("homePageContent").appendChild(schedules);
 		 $.ajax({
           url: 'https://www.msquaresys.com/teacher/getTeacherSession.php?teacherId='+teacherMain.id,
           dataType: 'json', crossOrigin: true, async:true,
@@ -1086,9 +1130,7 @@ app = {
 			   return;
 		   }*/
 		   let table= document.createElement('table'); 
-		   let schedules=document.createElement('div');
 		   table.setAttribute('class',' table-striped');
-		   schedules.appendChild(document.createTextNode(labels['lblMyScheduleManager']));
 		   data.rows.forEach(function(t){
 		   if(Date.parse(t.endTime)>Date.now()){
 		   let tr= document.createElement('tr');
@@ -1151,7 +1193,7 @@ app = {
 			addSchedule.appendChild(document.createTextNode(' Add Session'));
 			schedules.appendChild(addSchedule);
 			
-			document.getElementById("homePageContent").appendChild(schedules);
+			
 			} //end of success
 			,
 	  error: function(xhr, textStatus, errorThrown){
@@ -1176,8 +1218,13 @@ app = {
 		   localStorage.setItem("isAdmin",true);
 		   localStorage.setItem("adminTeacher",JSON.stringify(teacherMain));
 		   let approvals=document.createElement('div');
-		   approvals.appendChild(document.createTextNode(labels['lblApproveTeachers']));
-		  
+		   approvals.setAttribute('class','well well-sm');
+		    let approvaldivLabel =document.createElement("div");
+		    approvaldivLabel.setAttribute('class','well well-sm');
+		     let approvalLabel =document.createTextNode(labels['lblApproveTeachers']);
+		     approvaldivLabel.appendChild(approvalLabel);
+		    approvals.appendChild(approvaldivLabel);
+		   
 		   data.rows.forEach(function(t){
 		      let teacherApprove= document.createElement('span'); 
 		      teacherApprove.appendChild(document.createElement('br'));
@@ -1231,7 +1278,7 @@ app = {
 		document.getElementById("showAllPage").appendChild(divShowAllPage);
 		//console.log('//www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id);
 	$.ajax({
-      url: 'https://www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id,
+      url: 'https://www.msquaresys.com/teacher/getTeachersForLang.php?langId='+learn.id+'&rows=1000',
       dataType: 'json', crossOrigin: true, async:true,
       success: function(data) {
         data.rows.forEach(function(t){ 
@@ -1547,7 +1594,7 @@ app = {
 		document.getElementById("containerFooter").appendChild(hr); 
 		let homespan= document.createElement('button');
 		homespan.setAttribute('id','Home');
-		homespan.setAttribute('class','glyphicon glyphicon-home'); 
+		homespan.setAttribute('class','btn btn-default btn-sm glyphicon glyphicon-home'); 
 		homespan.setAttribute('style','float :left');
 		homespan.appendChild(document.createTextNode(' '+labels['lbl'+localStorage.getItem('role')]+' '+labels['lblHome']));
 		document.getElementById("containerFooter").appendChild(homespan);
@@ -1558,7 +1605,7 @@ app = {
 		
 		let resetspan= document.createElement('button');
 		resetspan.setAttribute('id','Logout');
-		resetspan.setAttribute('class','glyphicon glyphicon-cog'); 
+		resetspan.setAttribute('class','btn btn-default btn-sm glyphicon glyphicon-cog'); 
 		resetspan.setAttribute('style','float :right');
 		resetspan.appendChild(document.createTextNode(' '+labels['lblLogout']));
 		document.getElementById("containerFooter").appendChild(resetspan);
@@ -1575,11 +1622,14 @@ app = {
     onDeviceReady: function() {
         this.receivedEvent('deviceready');  
 	},
-	onBackKeyDown : function(){
+	onBackKeyDown : function(e){
 		console.log("back");
+		
+	   document.getElementById("errMsg").innerHTML="Back ";
 	if(performance.navigation.type == 2) {
 		console.log("back 1")
 		}
+		e.preventDefault();
 	},
 	goingLive : function(e){
 	  let liveSessionId;
@@ -1623,38 +1673,38 @@ app = {
       });
 	 	 
   },
-  joinLive : function(e){
-	e.preventDefault();
-	try{
-	localStorage.setItem("page", "joinLive");
-	localStorage.setItem("currTime",new Date().getTime());
-	console.log("Click joinLive for session id " +e.target.attributes.liveid.value);
-	let liveSessionId= e.target.attributes.liveid.value;
-	localStorage.setItem(connection.socketMessageEvent, liveSessionId);
-	console.log("joinLive" ,localStorage);
-	document.getElementById("logo").hidden=true;
-	document.getElementById("errMsg").innerHTML="Attempting Connection for Student to Join...";
-	document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
-	connection.sdpConstraints.mandatory = {
-		OfferToReceiveAudio: true,
-		OfferToReceiveVideo: true
-		};
-		connection.join(liveSessionId);
-	setTimeout(function()
-	{ 
-	try{
-	document.getElementsByClassName("media-box")[0].children[0].remove();
-	}catch(err){
-	}
-	},5000);
-	app.hideDivs();
-	app.reconnectStundentOnDisconnect();	
-		}
-	catch(err){
-	console.log("Invalid sessionid on Click Live" ,e);
-	return;
-	}	  
-  },
+    joinLive : function(e){
+    	e.preventDefault();
+    	try{
+    	localStorage.setItem("page", "joinLive");
+    	localStorage.setItem("currTime",new Date().getTime());
+    	console.log("Click joinLive for session id " +e.target.attributes.liveid.value);
+    	let liveSessionId= e.target.attributes.liveid.value;
+    	localStorage.setItem(connection.socketMessageEvent, liveSessionId);
+    	console.log("joinLive" ,localStorage);
+    	document.getElementById("logo").hidden=true;
+    	document.getElementById("errMsg").innerHTML="Attempting Connection for Student to Join...";
+    	document.getElementById("backToTeacher").innerHTML=labels['lblBack'];
+    	connection.sdpConstraints.mandatory = {
+    		OfferToReceiveAudio: true,
+    		OfferToReceiveVideo: true
+    		};
+    		connection.join(liveSessionId);
+    	setTimeout(function()
+    	{ 
+    	try{
+    	document.getElementsByClassName("media-box")[0].children[0].remove();
+    	}catch(err){
+    	}
+    	},5000);
+    	app.hideDivs();
+    	app.reconnectStundentOnDisconnect();	
+    		}
+    	catch(err){
+    	console.log("Invalid sessionid on Click Live" ,e);
+    	return;
+    	}	  
+      },
  
 	approveTeacher:function(e){
 	e.preventDefault();

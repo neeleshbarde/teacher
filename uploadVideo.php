@@ -5,7 +5,7 @@ $sourcePath = $_FILES['userVideo']['tmp_name'];
 $targetPath = "uploads/".$_FILES['userVideo']['name'];
 if(move_uploaded_file($sourcePath,$targetPath)) {
 ?>
-<img class="image-preview" src="<?php echo $targetPath; ?>" class="upload-preview" />
+<video class="image-preview upload-preview" width="100%" height="auto" controls preload="none" style="padding:5px;"><source id ="regTeacherVideoSample" src="<?php echo $targetPath; ?>" type="video/mp4" /></video>'
 <?php
 }
 }

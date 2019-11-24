@@ -1,6 +1,7 @@
 <?php  header('Access-Control-Allow-Origin: *');
 	$page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-	$rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
+	$rows = isset($_REQUEST['rows'])? intval($_REQUEST['rows']):(isset($_GET['rows'])? intval($_GET['rows']):5);
+ 
 	$offset = ($page-1)*$rows;
 	$result = array();
 	$teacherId =  isset($_REQUEST['teacherId'])? intval($_REQUEST['teacherId']):(isset($_GET['teacherId'])? intval($_GET['teacherId']):0);

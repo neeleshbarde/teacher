@@ -17,16 +17,14 @@
 
 	while($row = mysql_fetch_object($rs)){
 		$sampleVideos = array();
-		$subrs = mysql_query("SELECT id , srcMP4 FROM samplevideos WHERE teacher_id =$teacherId limit $offset,$rows");
-		$subrow = mysql_fetch_object($subrs);
+		$subrs = mysql_query("SELECT id , srcMP4 FROM samplevideos WHERE teacher_id ='$teacherId' limit $offset,$rows");
 		 while($subrow = mysql_fetch_object($subrs)){
 		 array_push($sampleVideos, $subrow);
 		 }
 		$row->sampleVideos= $sampleVideos;
-		
+		 
 		$sampleVideos = array();
-		$subrs = mysql_query("SELECT link FROM sampleVideosYouTube WHERE teacher_id =$teacherId limit $offset,$rows");
-		$subrow = mysql_fetch_object($subrs);
+		$subrs = mysql_query("SELECT link FROM sampleVideosYouTube WHERE teacher_id ='$teacherId' limit $offset,$rows");
 		 while($subrow = mysql_fetch_object($subrs)){
 		 array_push($sampleVideos, $subrow->link);
 		 }
